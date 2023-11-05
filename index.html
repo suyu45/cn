@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .fb {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .btn {
+        height: 3rem;
+        width: 20rem;
+        margin: 1rem;
+      }
+      .btn:hover {
+        cursor: grab;
+      }
+    </style>
+    <script>
+      function f1() {
+        const txt = `#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX_NODES 5
+#define INF 9999
+
+int numNodes;
+int distance[MAX_NODES][MAX_NODES];
+
+void initializeGraph() {
+    for (int i = 0; i < MAX_NODES; i++) {
+        for (int j = 0; j < MAX_NODES; j++) {
+            if (i == j) {
+                distance[i][j] = 0;
+            } else {
+                distance[i][j] = INF;
+            }
+        }
+    }
+}
+
+void updateDistanceVector(int node) {
+    for (int dest = 0; dest < numNodes; dest++) {
+        if (dest == node) {
+            continue; // Skip the source node
+        }
+
+        int minCost = INF;
+
+        for (int via = 0; via numNodes; via++) {
+            if (via == node) {
+                continue; // Skip the source node
+            }
+
+            int cost = distance[node][via] + distance[via][dest];
+
+            if (cost < minCost) {
+                minCost = cost;
+            }
+        }
+
+        if (minCost < distance[node][dest]) {
+            distance[node][dest] = minCost;
+        }
+    }
+}
+
+void printRoutingTable(int node) {
+    printf("Routing table for node %d:\\n", node);
+    printf("Dest\\tCost\\n");
+    for (int i = 0; i < numNodes; i++) {
+        if (i != node) {
+            printf("%d\\t%d\\n", i, distance[node][i]);
+        }
+    }
+}
+
+int main() {
+    numNodes = 5; // Number of nodes in the network
+    initializeGraph();
+
+    distance[0][1] = 1;
+    distance[1][2] = 2;
+    distance[2][3] = 1;
+    distance[3][4] = 1;
+
+    for (int i = 0; i < numNodes; i++) {
+        updateDistanceVector(i);
+        printRoutingTable(i);
+        printf("\\n");
+    }
+
+    return 0;
+}`;
+        navigator.clipboard.writeText(txt);
+      }
+
+      function f2() {
+        const txt = `#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <netdb.h>
+
+int main() {
+    char input[100];
+    int choice;
+
+    printf("Choose an option:\\n");
+    printf("1. IP to Hostname (Reverse DNS Lookup)\\n");
+    printf("2. Hostname to IP (DNS Lookup)\\n");
+    scanf("%d", &choice);
+
+    if (choice != 1 && choice != 2) {
+        printf("Invalid choice. Exiting.\\n");
+        return 1;
+    }
+
+    printf("Enter the %s: ", (choice == 1) ? "IP address" : "hostname");
+    scanf("%s", input);
+
+    if (choice == 1) {
+        // Reverse DNS Lookup (IP to Hostname)
+        struct sockaddr_in sa;
+        sa.sin_family = AF_INET;
+        if (inet_pton(AF_INET, input, &(sa.sin_addr)) == 1) {
+            struct hostent *he = gethostbyaddr(&sa.sin_addr, sizeof(sa.sin_addr), AF_INET);
+            if (he != NULL) {
+                printf("Hostname: %s\\n", he->h_name);
+            } else {
+                printf("DNS lookup failed for the provided IP address.\\n");
+            }
+        } else {
+            printf("Invalid IP address format.\\n");
+        }
+    } else {
+        // DNS Lookup (Hostname to IP)
+        struct addrinfo hints, *res, *p;
+        int status;
+        memset(&hints, 0, sizeof hints);
+        hints.ai_family = AF_UNSPEC;
+
+        if ((status = getaddrinfo(input, NULL, &hints, &res)) != 0) {
+            fprintf(stderr, "getaddrinfo: %s\\n", gai_strerror(status));
+            return 1;
+        }
+
+        printf("IP Addresses for %s:\\n", input);
+        for (p = res; p != NULL; p = p->ai_next) {
+            void *addr;
+            char ipstr[INET6_ADDRSTRLEN];
+            if (p->ai_family == AF_INET) {
+                struct sockaddr_in *ipv4 = (struct sockaddr_in *)p->ai_addr;
+                addr = &(ipv4->sin_addr);
+            } else {
+                struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *)p->ai_addr;
+                addr = &(ipv6->sin6_addr);
+            }
+            inet_ntop(p->ai_family, addr, ipstr, sizeof ipstr);
+            printf("%s\\n", ipstr);
+        }
+
+        freeaddrinfo(res);
+    }
+
+    return 0;
+}`;
+        navigator.clipboard.writeText(txt);
+      }
+
+      function f3() {
+        const txt = `#include <stdio.h>
+#include <string.h>
+
+// CRC generator polynomial: x^3 + x^2 + 1
+#define CRC_POLYNOMIAL 0x7  // Binary: 111 (3 bits)
+
+// Function to perform CRC error detection
+int crcErrorDetection(char message[], int messageLength) {
+    int crc = 0; // Initialize CRC register to 0
+
+    // Perform CRC calculation
+    for (int i = 0; i < messageLength; i++) {
+        crc ^= (message[i] << 3); // Shift 3 bits to the left for CRC calculation
+
+        for (int j = 0; j < 4; j++) {
+            if (crc & 0x8) {
+                crc = (crc << 1) ^ CRC_POLYNOMIAL;
+            } else {
+                crc = crc << 1;
+            }
+        }
+    }
+
+    // Check if the CRC code is zero (no error)
+    return crc == 0;
+}
+
+int main() {
+    char message[100];
+    int messageLength;
+
+    printf("Enter a message (7/8 bits ASCII): ");
+    scanf("%s", message);
+
+    messageLength = strlen(message);
+
+    if (messageLength > 0) {
+        int valid = crcErrorDetection(message, messageLength);
+
+        if (valid) {
+            printf("Message is error-free.\\n");
+        } else {
+            printf("Message has an error.\\n");
+        }
+    } else {
+        printf("Message is empty.\\n");
+    }
+
+    return 0;
+}`;
+        navigator.clipboard.writeText(txt);
+      }
+
+      function f4() {
+        const txt = `#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+#include <unistd.h>
+
+#define WINDOW_SIZE 4
+#define MAX_SEQ_NUM (2 * WINDOW_SIZE)
+
+// Sender and receiver data structures
+typedef struct {
+    char data;
+    bool acked;
+} Packet;
+
+Packet senderBuffer[MAX_SEQ_NUM];
+Packet receiverBuffer[MAX_SEQ_NUM];
+
+int senderNextSeq = 0;
+int receiverExpectedSeq = 0;
+
+// Simulate the sender
+void sender() {
+    while (true) {
+        // Send packets up to the window size
+        for (int i = 0; i < WINDOW_SIZE; i++) {
+            if (senderNextSeq < MAX_SEQ_NUM) {
+                printf("Sender: Sending packet %d\\n", senderNextSeq);
+                // Simulate packet transmission (e.g., over the network)
+                sleep(1);
+                // Mark the packet as unacknowledged
+                senderBuffer[senderNextSeq].acked = false;
+                senderNextSeq++;
+            }
+        }
+
+        // Simulate receiving acknowledgments from the receiver
+        for (int i = 0; i < WINDOW_SIZE; i++) {
+            if (senderBuffer[i].acked == false) {
+                // Simulate an acknowledgment received
+                printf("Sender: Received ACK for packet %d\\n", i);
+                senderBuffer[i].acked = true;
+            }
+        }
+    }
+}
+
+// Simulate the receiver
+void receiver() {
+    while (true) {
+        // Simulate receiving packets from the sender
+        // In a real scenario, packets would be received from the network
+        // Here, we simulate packet reception after a delay
+        sleep(1);
+
+        // Generate ACK packets for received packets
+        for (int i = receiverExpectedSeq; i < senderNextSeq; i++) {
+            printf("Receiver: Received packet %d\\n", i);
+            receiverBuffer[i] = senderBuffer[i];
+            receiverBuffer[i].acked = true;
+            receiverExpectedSeq++;
+        }
+    }
+}
+
+int main() {
+    // Initialize the sender and receiver buffers
+    memset(senderBuffer, 0, sizeof(senderBuffer));
+    memset(receiverBuffer, 0, sizeof(receiverBuffer));
+
+    // Simulate sender and receiver
+    // In a real scenario, these would run in separate processes or threads
+    sender();
+    receiver();
+
+    return 0;
+}`;
+        navigator.clipboard.writeText(txt);
+      }
+
+      function f5() {
+        const txt = `#include <stdio.h>
+#include <pcap.h>
+
+void packetHandler(unsigned char* user, const struct pcap_pkthdr* pkthdr, const unsigned char* packet) {
+    printf("Packet Captured, Packet Length: %d\\n", pkthdr->len);
+    // Process and analyze the packet here
+}
+
+int main() {
+    char* dev; // Network device (e.g., "eth0")
+    char errbuf[PCAP_ERRBUF_SIZE];
+    pcap_t* handle;
+
+    // Find a suitable network device
+    dev = pcap_lookupdev(errbuf);
+    if (dev == NULL) {
+        fprintf(stderr, "Device not found: %s\\n", errbuf);
+        return 1;
+    }
+
+    // Open the network device for packet capturing
+    handle = pcap_open_live(dev, BUFSIZ, 1, 1000, errbuf);
+    if (handle == NULL) {
+        fprintf(stderr, "Error opening device: %s\\n", errbuf);
+        return 1;
+    }
+
+    // Start capturing packets
+    pcap_loop(handle, 0, packetHandler, NULL);
+
+    // Close the capture handle (optional)
+    pcap_close(handle);
+
+    return 0;
+}`;
+        navigator.clipboard.writeText(txt);
+      }
+
+      function f6() {
+        const txt = `#include <stdio.h>
+#include <unistd.h>
+
+#define BUCKET_SIZE 10  // Maximum bucket size
+#define OUTPUT_RATE 3   // Output rate in packets per second
+
+int main() {
+    int input_rate;  // Input rate in packets per second
+    int n, packet_count = 0, bucket_content = 0;
+
+    printf("Enter input rate (packets per second): ");
+    scanf("%d", &input_rate);
+
+    for (n = 1; n <= 20; n++) {
+        printf("\\nTime = %d sec\\n", n);
+
+        // Simulate incoming packets
+        int incoming_packets = (rand() % (input_rate + 1)); // Random input between 0 and input_rate
+        printf("Incoming Packets: %d\\n", incoming_packets);
+
+        // Add incoming packets to the bucket
+        if ((bucket_content + incoming_packets) <= BUCKET_SIZE) {
+            bucket_content += incoming_packets;
+        } else {
+            // Overflow: Bucket is full
+            printf("Bucket Overflow\\n");
+        }
+
+        // Transmit packets from the bucket at the output rate
+        int outgoing_packets = (bucket_content < OUTPUT_RATE) ? bucket_content : OUTPUT_RATE;
+        bucket_content -= outgoing_packets;
+        printf("Packets Sent: %d\\n", outgoing_packets);
+        packet_count += outgoing_packets;
+
+        printf("Bucket Content: %d\\n", bucket_content);
+        printf("Packets Dropped: %d\\n", incoming_packets - outgoing_packets);
+    }
+
+    printf("\\nTotal Packets Sent: %d\\n", packet_count);
+
+    return 0;
+}`;
+        navigator.clipboard.writeText(txt);
+      }
+
+      function f7() {
+        const txt = `#include <stdio.h>
+#include <stdbool.h>
+#include <limits.h>
+
+// Number of nodes in the network
+#define V 5
+
+// Function to find the node with the minimum distance value
+int minDistance(int dist[], bool sptSet[]) {
+    int min = INT_MAX, min_index;
+
+    for (int v = 0; v < V; v++) {
+        if (!sptSet[v] && dist[v] <= min) {
+            min = dist[v];
+            min_index = v;
+        }
+    }
+
+    return min_index;
+}
+
+// Function to print the path from the source to a given node
+void printPath(int parent[], int j) {
+    if (parent[j] == -1) {
+        printf("%d ", j);
+        return;
+    }
+    printPath(parent, parent[j]);
+    printf("%d ", j);
+}
+
+// Function to calculate and print the shortest path from the source to all nodes
+void dijkstra(int graph[V][V], int src) {
+    int dist[V];
+    bool sptSet[V];
+    int parent[V];
+
+    for (int i = 0; i < V; i++) {
+        dist[i] = INT_MAX;
+        sptSet[i] = false;
+        parent[i] = -1;
+    }
+
+    dist[src] = 0;
+
+    for (int count = 0; count < V - 1; count++) {
+        int u = minDistance(dist, sptSet);
+        sptSet[u] = true;
+
+        for (int v = 0; v < V; v++) {
+            if (!sptSet[v] && graph[u][v] && dist[u] != INT_MAX &&
+                dist[u] + graph[u][v] < dist[v]) {
+                dist[v] = dist[u] + graph[u][v];
+                parent[v] = u;
+            }
+        }
+    }
+
+    printf("Node\\tDistance\\tPath\\n");
+    for (int i = 0; i < V; i++) {
+        printf("%d -> %d\\t%d\\t\\t%d ", src, i, dist[i], src);
+        printPath(parent, i);
+        printf("\\n");
+    }
+}
+
+int main() {
+    int graph[V][V] = {
+        {0, 2, 0, 1, 0},
+        {2, 0, 1, 3, 0},
+        {0, 1, 0, 2, 3},
+        {1, 3, 2, 0, 1},
+        {0, 0, 3, 1, 0}
+    };
+
+    int source = 0; // Source node for path calculation
+
+    dijkstra(graph, source);
+
+    return 0;
+}`;
+        navigator.clipboard.writeText(txt);
+      }
+
+      function f8() {
+        const txt = `#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int getIPAddressClass(char* ip) {
+    // Convert the IP address to a long integer
+    unsigned long ipVal = inet_addr(ip);
+
+    // Check the first octet of the IP address
+    if ((ipVal & 0x80000000) == 0) {
+        return 'A';
+    } else if ((ipVal & 0xC0000000) == 0x80000000) {
+        return 'B';
+    } else if ((ipVal & 0xE0000000) == 0xC0000000) {
+        return 'C';
+    } else if ((ipVal & 0xF0000000) == 0xE0000000) {
+        return 'D';
+    } else {
+        return 'E';
+    }
+}
+
+void checkSubnetMask(char* ip, char* subnetMask) {
+    unsigned long ipVal = inet_addr(ip);
+    unsigned long subnetMaskVal = inet_addr(subnetMask);
+
+    if ((ipVal & subnetMaskVal) == ipVal) {
+        printf("IP address %s is within the subnet defined by %s\\n", ip, subnetMask);
+    } else {
+        printf("IP address %s is not within the subnet defined by %s\\n", ip, subnetMask);
+    }
+}
+
+int main() {
+    char ip[16]; // Assuming IPv4 address
+    char subnetMask[16];
+
+    printf("Enter an IP address (e.g., 192.168.1.1): ");
+    scanf("%s", ip);
+    
+    printf("Enter a subnet mask (e.g., 255.255.255.0): ");
+    scanf("%s", subnetMask);
+
+    char ipClass = getIPAddressClass(ip);
+    printf("IP Address Class: %c\\n", ipClass);
+
+    checkSubnetMask(ip, subnetMask);
+
+    return 0;
+}`;
+        navigator.clipboard.writeText(txt);
+      }
+
+      function f9() {
+        const txt = `//propogation delay and transmision delay when numerical is given
+#include <stdio.h>
+
+int main() {
+    double s, L, R;
+    
+    // Prompt the user for input values
+    printf("Enter the propagation speed (s) in meters/second: ");
+    scanf("%lf", &s);
+    printf("Enter the packet size (L) in bits: ");
+    scanf("%lf", &L);
+    printf("Enter the link rate (R) in bps: ");
+    scanf("%lf", &R);
+
+    // Calculate propagation delay (dprop)
+    double dprop = L / R / 1000.0; // Divide by 1000 to convert bps to kbps
+
+    // Calculate transmission time (dtrans)
+    double dtrans = L / (R / 1000.0); // Divide by 1000 to convert bps to kbps
+
+    // Calculate end-to-end delay (de-to-e)
+    double de_to_e = (2 * s) + dtrans;
+
+    printf("Propagation Delay (dprop): %.4f seconds\\n", dprop);
+    printf("Transmission Time (dtrans): %.4f seconds\\n", dtrans);
+    printf("End-to-End Delay (de-to-e): %.4f seconds\\n", de_to_e);
+
+    return 0;
+}
+
+
+//Propogation delay program 
+#include <stdio.h>
+
+int main() {
+    double d, s, dprop;
+
+    // Prompt the user for distance and propagation speed
+    printf("Enter the distance (in meters): ");
+    scanf("%lf", &d);
+    printf("Enter the propagation speed (in meters/second): ");
+    scanf("%lf", &s);
+
+    // Calculate propagation delay
+    dprop = d / s;
+
+    // Display the result
+    printf("Propagation Delay (dprop): %.4f seconds\\n", dprop);
+
+    return 0;
+}
+
+//Transmission delay
+#include <stdio.h>
+
+int main() {
+    double L, R, dtrans;
+
+    // Prompt the user for packet size and transmission rate
+    printf("Enter the packet size (in bits): ");
+    scanf("%lf", &L);
+    printf("Enter the transmission rate (in bits per second): ");
+    scanf("%lf", &R);
+
+    // Calculate transmission delay
+    dtrans = L / R;
+
+    // Display the result
+    printf("Transmission Delay (dtrans): %.4f seconds\\n", dtrans);
+
+    return 0;
+}`;
+        navigator.clipboard.writeText(txt);
+      }
+
+      function f10() {
+        const txt = `#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+#include <unistd.h>
+
+#define WINDOW_SIZE 4
+#define MAX_SEQ_NUM (2 * WINDOW_SIZE)
+
+// Sender and receiver data structures
+typedef struct {
+    char data;
+    bool acked;
+} Packet;
+
+Packet senderBuffer[MAX_SEQ_NUM];
+Packet receiverBuffer[MAX_SEQ_NUM];
+
+int senderNextSeq = 0;
+int receiverExpectedSeq = 0;
+
+// Simulate the sender
+void sender() {
+    while (true) {
+        // Send packets up to the window size
+        for (int i = 0; i < WINDOW_SIZE; i++) {
+            if (senderNextSeq < MAX_SEQ_NUM) {
+                printf("Sender: Sending packet %d\\n", senderNextSeq);
+                // Simulate packet transmission (e.g., over the network)
+                sleep(1);
+                // Mark the packet as unacknowledged
+                senderBuffer[senderNextSeq].acked = false;
+                senderNextSeq++;
+            }
+        }
+
+        // Simulate receiving acknowledgments from the receiver
+        for (int i = 0; i < WINDOW_SIZE; i++) {
+            if (senderBuffer[i].acked == false) {
+                // Simulate an acknowledgment received
+                printf("Sender: Received ACK for packet %d\\n", i);
+                senderBuffer[i].acked = true;
+            }
+        }
+    }
+}
+
+// Simulate the receiver
+void receiver() {
+    while (true) {
+        // Simulate receiving packets from the sender
+        // In a real scenario, packets would be received from the network
+        // Here, we simulate packet reception after a delay
+        sleep(1);
+
+        // Generate ACK packets for received packets
+        for (int i = receiverExpectedSeq; i < senderNextSeq; i++) {
+            printf("Receiver: Received packet %d\\n", i);
+            receiverBuffer[i] = senderBuffer[i];
+            receiverBuffer[i].acked = true;
+            receiverExpectedSeq++;
+        }
+    }
+}
+
+int main() {
+    // Initialize the sender and receiver buffers
+    memset(senderBuffer, 0, sizeof(senderBuffer));
+    memset(receiverBuffer, 0, sizeof(receiverBuffer));
+
+    // Simulate sender and receiver
+    // In a real scenario, these would run in separate processes or threads
+    sender();
+    receiver();
+
+    return 0;
+}`;
+        navigator.clipboard.writeText(txt);
+      }
+
+      function f11() {
+        const txt = `//Sender side ascii to binary
+#include <stdio.h>
+#include <string.h>
+
+void string_to_binary(char *input_string, char *binary_data) {
+    int i, j;
+    for (i = 0; i < strlen(input_string); i++) {
+        // Convert each character to its ASCII representation
+        int ascii_value = input_string[i];
+        for (j = 7; j >= 0; j--) {
+            // Convert ASCII to binary and store in the binary_data array
+            binary_data[i * 8 + (7 - j)] = (ascii_value >> j) & 1 ? '1' : '0';
+        }
+    }
+    binary_data[i * 8] = '\\0';  // Null-terminate the binary data
+}
+
+int main() {
+    char input_string[100];
+    char binary_data[800]; // Assuming a maximum of 100 characters, resulting in 800 bits of binary data
+
+    printf("Enter the string to send: ");
+    gets(input_string);
+
+    string_to_binary(input_string, binary_data);
+
+    printf("Binary data to send: %s\\n", binary_data);
+
+    return 0;
+}
+
+
+
+
+//reciver side 
+#include <stdio.h>
+#include <string.h>
+
+void binary_to_string(char *binary_data, char *received_string) {
+    int i, j;
+    for (i = 0; i < strlen(binary_data) / 8; i++) {
+        int ascii_value = 0;
+        for (j = 0; j < 8; j++) {
+            // Convert binary to ASCII
+            ascii_value = (ascii_value << 1) + (binary_data[i * 8 + j] - '0');
+        }
+        received_string[i] = ascii_value;
+    }
+    received_string[i] = '\\0';  // Null-terminate the received string
+}
+
+int main() {
+    char binary_data[800];  // Assuming a maximum of 800 bits of binary data
+    char received_string[100];  // To store the received string
+
+    printf("Enter the binary data received: ");
+    gets(binary_data);
+
+    binary_to_string(binary_data, received_string);
+
+    printf("Received String: %s\\n", received_string);
+
+    return 0;
+}`;
+        navigator.clipboard.writeText(txt);
+      }
+
+      function f12() {
+        const txt = `#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+
+#define PORT 12345
+#define MAX_MESSAGE_LENGTH 1024
+
+// Function to create and configure a socket for communication
+int createSocket() {
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd == -1) {
+        perror("Socket creation failed");
+        exit(EXIT_FAILURE);
+    }
+    return sockfd;
+}
+
+// Function to establish a connection with a peer
+void connectToPeer(int sockfd, const char *ip) {
+    struct sockaddr_in serverAddr;
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(PORT);
+    serverAddr.sin_addr.s_addr = inet_addr(ip);
+
+    if (connect(sockfd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) == -1) {
+        perror("Connection failed");
+        exit(EXIT_FAILURE);
+    }
+}
+
+// Function for sending and receiving messages
+void chat(int sockfd) {
+    char message[MAX_MESSAGE_LENGTH];
+
+    while (1) {
+        printf("You: ");
+        fgets(message, MAX_MESSAGE_LENGTH, stdin);
+        send(sockfd, message, strlen(message), 0);
+
+        if (recv(sockfd, message, MAX_MESSAGE_LENGTH, 0) <= 0) {
+            printf("Peer disconnected.\\n");
+            break;
+        }
+
+        printf("Peer: %s", message);
+    }
+}
+
+int main() {
+    char peerIP[16]; // IPv4 address format (xxx.xxx.xxx.xxx)
+    int sockfd;
+
+    printf("Enter peer's IP address: ");
+    fgets(peerIP, sizeof(peerIP), stdin);
+    peerIP[strlen(peerIP) - 1] = '\\0'; // Remove the newline character
+
+    sockfd = createSocket();
+    connectToPeer(sockfd, peerIP);
+
+    printf("Connected to peer at %s:%d\\n", peerIP, PORT);
+    chat(sockfd);
+
+    close(sockfd);
+
+    return 0;
+}`;
+        navigator.clipboard.writeText(txt);
+      }
+
+      function f13() {
+        const txt = `#include <stdio.h>
+
+int main() {
+    double y, k, z, w;
+    double packetization_delay, transmission_delay, propagation_delay, total_delay;
+
+    // Prompt the user for input values
+    printf("Enter the packet size (in bytes, y): ");
+    scanf("%lf", &y);
+    printf("Enter the time to convert a bit to analog signal (in msec, k): ");
+    scanf("%lf", &k);
+    printf("Enter the transmission rate (in Mbps, z): ");
+    scanf("%lf", &z);
+    printf("Enter the propagation delay (in msec, w): ");
+    scanf("%lf", &w);
+
+    // Calculate packetization delay (time required to build the packet)
+    packetization_delay = (y * 8) / (z * 1000); // Convert y bytes to bits and z Mbps to bps
+
+    // Calculate transmission delay (time required to transmit the packet)
+    transmission_delay = (y * 8) / (z * 1000); // Convert y bytes to bits and z Mbps to bps
+
+    // Calculate propagation delay
+    propagation_delay = w / 1000; // Convert w msec to seconds
+
+    // Calculate total delay
+    total_delay = packetization_delay + transmission_delay + propagation_delay;
+
+    // Display the results
+    printf("Packetization Delay: %.4f seconds\\n", packetization_delay);
+    printf("Transmission Delay: %.4f seconds\\n", transmission_delay);
+    printf("Propagation Delay: %.4f seconds\\n", propagation_delay);
+    printf("Total Delay: %.4f seconds\\n", total_delay);
+
+    return 0;
+}`;
+        navigator.clipboard.writeText(txt);
+      }
+
+      function f14() {
+        const txt = `#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <netinet/ip.h>
+#include <netinet/ip_icmp.h>
+
+#define MAX_HOPS 30
+#define MAX_PACKET_SIZE 1024
+
+void print_usage(char *program_name) {
+    printf("Usage: %s <destination IP>\\n", program_name);
+}
+
+int main(int argc, char *argv[]) {
+    if (argc != 2) {
+        print_usage(argv[0]);
+        return 1;
+    }
+
+    const char *destination_ip_str = argv[1];
+    struct sockaddr_in destination_addr;
+    struct ip *ip_header;
+    struct icmphdr *icmp_header;
+
+    int sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+    if (sockfd == -1) {
+        perror("socket");
+        return 1;
+    }
+
+    destination_addr.sin_family = AF_INET;
+    if (inet_pton(AF_INET, destination_ip_str, &destination_addr.sin_addr) != 1) {
+        perror("inet_pton");
+        return 1;
+    }
+
+    char packet[MAX_PACKET_SIZE];
+    memset(packet, 0, sizeof(packet));
+    ip_header = (struct ip *)packet;
+    icmp_header = (struct icmphdr *)(packet + sizeof(struct ip));
+
+    ip_header->ip_hl = 5;
+    ip_header->ip_v = 4;
+    ip_header->ip_tos = 0;
+    ip_header->ip_len = sizeof(struct ip) + sizeof(struct icmphdr);
+    ip_header->ip_id = htons(0);
+    ip_header->ip_off = 0;
+    ip_header->ip_ttl = 1;
+    ip_header->ip_p = IPPROTO_ICMP;
+    ip_header->ip_src.s_addr = INADDR_ANY;
+    ip_header->ip_dst.s_addr = destination_addr.sin_addr.s_addr;
+
+    icmp_header->type = ICMP_ECHO;
+    icmp_header->code = 0;
+    icmp_header->checksum = 0;
+    icmp_header->un.echo.id = 0;
+    icmp_header->un.echo.sequence = 0;
+    icmp_header->checksum = 0;
+
+    for (int ttl = 1; ttl <= MAX_HOPS; ttl++) {
+        if (setsockopt(sockfd, IPPROTO_IP, IP_TTL, &ttl, sizeof(int)) == -1) {
+            perror("setsockopt");
+            return 1;
+        }
+
+        if (sendto(sockfd, packet, sizeof(packet), 0, (struct sockaddr *)&destination_addr, sizeof(destination_addr)) == -1) {
+            perror("sendto");
+            return 1;
+        }
+
+        struct sockaddr_in response_addr;
+        socklen_t response_addr_len = sizeof(response_addr);
+        char response[MAX_PACKET_SIZE];
+        memset(response, 0, sizeof(response));
+
+        ssize_t bytes_received = recvfrom(sockfd, response, sizeof(response), 0, (struct sockaddr *)&response_addr, &response_addr_len);
+        if (bytes_received == -1) {
+            perror("recvfrom");
+            return 1;
+        }
+
+        ip_header = (struct ip *)response;
+        icmp_header = (struct icmphdr *)(response + (ip_header->ip_hl << 2));
+
+        printf("%d: %s\\n", ttl, inet_ntoa(response_addr.sin_addr));
+
+        if (icmp_header->type == ICMP_ECHOREPLY) {
+            printf("Destination Reached!\\n");
+            break;
+        }
+    }
+
+    close(sockfd);
+
+    return 0;
+}`;
+        navigator.clipboard.writeText(txt);
+      }
+
+      function f15() {
+        const txt = `// String to binary to Ascii
+#include<stdio.h>
+int main()
+{
+    char str[200];
+    
+    printf("Enter String 1\\n");
+    scanf("%s",str);
+    for(int i=0;str[i]!='\\0';i++)
+    {
+        printf("The ascii vale of %c is %d",str[i],str[i]);
+        printf("\\n");
+
+    }
+    printf("ASCII to binary is ");
+    for(int i=7;i>=0;i--)
+    {
+        printf("%d",(str[i] >> i)&1);
+        
+    }
+
+}`;
+        navigator.clipboard.writeText(txt);
+      }
+
+      function ff() {
+        document.body.style.backgroundColor = "grey";
+      }
+    </script>
+  </head>
+  <body>
+    <button class="btn" onclick="f1(), ff()">Distance Vector Routing</button>
+    <button class="btn" onclick="f2()">DNS Lookup and URL Program</button>
+    <button class="btn" onclick="f3()">ERROR Detection</button>
+    <button class="btn" onclick="f4()">Go Back N</button>
+    <button class="btn" onclick="f5()">LAN</button>
+    <button class="btn" onclick="f6()">Leaky Bucket</button>
+    <button class="btn" onclick="f7()">Link State Routing</button>
+    <button class="btn" onclick="f8()">Class of IP Address</button>
+    <button class="btn" onclick="f9()">Propogation and transmission</button>
+    <button class="btn" onclick="f10()">Selective Repeat</button>
+    <button class="btn" onclick="f11()">Sender Side ASCII to Binary</button>
+    <button class="btn" onclick="f12()">Sockets</button>
+    <button class="btn" onclick="f13()">Build and transmit packet</button>
+    <button class="btn" onclick="f14()">Routes for Destination</button>
+    <button class="btn" onclick="f15()">String to Binary to ASCII</button>
+  </body>
+</html>
